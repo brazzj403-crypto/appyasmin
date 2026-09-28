@@ -900,6 +900,35 @@ function applyTheme(){
 // ── NAVIGATE ─────────────────────────────────────────────────────
 function navigate(v){view=v;render();window.scrollTo({top:0,behavior:'instant'})}
 
+async function renderGifs(){
+  const placeholders=document.querySelectorAll('.session-gif');
+  if(!placeholders.length)return;
+  if(!exdbCache)exdbCache=loadExdbCache();
+  if(!exdbCache){
+    try{
+      const res=await fetch(`${EXDB_BASE}/exercises?limit=1500`,{signal:AbortSignal.timeout(8000)});
+      if(res.ok){
+        const json=await res.json();
+        exdbCache=(json.data||json||[]).map(e=>({name:e.name,gifUrl:e.gifUrl}));
+        saveExdbCache(exdbCache);
+      }
+    }catch(e){}
+  }
+  if(!exdbCache)return;
+  placeholders.forEach(el=>{
+    if(el.dataset.loaded)return;
+    const q=el.dataset.exName.toLowerCase().trim();
+    const qwords = q.split(' ');
+    let match=exdbCache.find(e=>e.name.toLowerCase()===q) || exdbCache.find(e=>q.includes(e.name.toLowerCase()) || e.name.toLowerCase().includes(q));
+    // fallback fuzzy search by first word if no match
+    if(!match && qwords.length > 0) match = exdbCache.find(e=>e.name.toLowerCase().includes(qwords[0]));
+    if(match){
+      el.innerHTML=`<img src="${match.gifUrl}" loading="lazy" style="width:70px;height:70px;border-radius:10px;background:#fff;object-fit:cover;flex:none;box-shadow:var(--shadow-sm)">`;
+      el.dataset.loaded='true';
+    }
+  });
+}
+
 // ── RENDER ───────────────────────────────────────────────────────
 function render(){
   applyTheme();
@@ -932,6 +961,7 @@ function render(){
   renderRest();
   // re-init charts after render
   if(view==='progress'){setTimeout(initCharts,50)}
+  if(view==='session'){setTimeout(renderGifs,50)}
   if(storageError&&!storageWarned){storageWarned=true;toast('Armazenamento indisponível. Dados somente nesta sessão.',7000)}
 }
 
@@ -1303,6 +1333,7 @@ function sessionView(){
             <p>${old?`⬆️ Último: ${esc(old.kg)} kg × ${esc(old.reps)} rep`:'Primeiro registro!'}</p>
             ${e.notes?`<p>${esc(e.notes)}</p>`:''}
           </div>
+          <div class="session-gif" data-ex-name="${esc(e.name)}"></div>
         </div>
         <div class="set-header"><span>Série</span><span>kg</span><span>Reps</span><span>✓</span></div>
         ${e.records.map((r,j)=>`<div class="set-row ${r.done?'done':''}" data-set-row="${i}-${j}">
