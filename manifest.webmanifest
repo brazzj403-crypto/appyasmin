@@ -1,13 +1,13 @@
 {
   "id": "./",
-  "name": "Ritmo — Seus treinos",
-  "short_name": "Ritmo",
-  "description": "Sua rotina de musculação, uma série de cada vez.",
+  "name": "Casal Rats 🐀 — Treinem juntos",
+  "short_name": "Casal Rats",
+  "description": "App de musculação do casal. Registre séries, veja progresso e treinem juntos.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#141615",
-  "theme_color": "#141615",
+  "background_color": "#0d0f0e",
+  "theme_color": "#0d0f0e",
   "lang": "pt-BR",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
