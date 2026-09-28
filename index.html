@@ -903,7 +903,8 @@ function navigate(v){view=v;render();window.scrollTo({top:0,behavior:'instant'})
 // ── RENDER ───────────────────────────────────────────────────────
 function render(){
   applyTheme();
-  const labels={home:'Hoje',plans:'Treinos',history:'Histórico',progress:'Progresso',settings:'Ajustes',session:'Em andamento'};
+  const isY = state.active === 'p2';
+  const labels={home:'Hoje',plans:isY?'Nossos Treinos':'Treinos',history:'Histórico',progress:isY?'Sua Evolução, Princesa':'Progresso',settings:'Ajustes',session:'Em andamento'};
   $('#page-label').textContent=labels[view]||'Hoje';
   $('#navigation').innerHTML=[
     ['home','home','Hoje'],
@@ -963,6 +964,7 @@ function homeView(){
       <h1>Bora treinar, ${esc(nameFirst())}! ${state.active===state.profiles[1].id?'\u{1F451}':'\u{1F400}'}</h1>
       <p>Um passo de cada vez. Uma série de cada vez.</p>
     </div>
+    ${state.active === 'p2' ? `<div class="mini-note" style="margin-bottom:22px;border-color:var(--accent);background:var(--accentSoft);color:#fff">${icon('info')} Não esquece de beber água e dar o seu melhor hoje, princesa! Te amo ❤️</div>` : ''}
     <div class="dashboard">
       <div class="stack">
         <section class="hero">
@@ -1417,8 +1419,11 @@ function savePlan(){
 // ── HISTORY DETAIL ───────────────────────────────────────────────
 function showHistory(s,finished=false){
   const t=totals(s);
-  const confetti=finished?'<div class="confetti-bar">🎉 🐀 💪 🏆 ⚡</div>':'';
-  openModal(finished?'Treino concluído! 💪':esc(s.name),
+  const isY = s.owner === 'p2';
+  const phrases = ['Muito bem, minha princesa! 🥰', 'Estou orgulhoso de você! ❤️', 'Arrasou, meu amor! 💖', 'Você é incrível! 😍'];
+  const title = isY ? phrases[Math.floor(Math.random()*phrases.length)] : 'Treino concluído! 💪';
+  const confetti=finished?`<div class="confetti-bar">${isY?'💖 🌹 🥰 ✨ 👑':'🎉 🐀 💪 🏆 ⚡'}</div>`:'';
+  openModal(finished?title:esc(s.name),
   `${confetti}<div class="row between"><span class="badge green">${icon('check')} Salvo</span><span class="small muted">${new Date(s.ended).toLocaleDateString('pt-BR')}</span></div>
   ${finished?`<h2 style="margin-top:18px">${esc(s.name)}</h2>`:''}
   <p class="small muted" style="margin-top:6px">${esc(profile(s.owner).name)}</p>
@@ -1428,7 +1433,7 @@ function showHistory(s,finished=false){
     ${t.volume>0?`<div style="grid-column:1/-1"><span class="small muted">Volume total</span><div class="summary-value">${t.volume.toLocaleString('pt-BR')} <span class="small muted">kg</span></div></div>`:''}
   </div>
   ${s.exercises.map(e=>`<div class="history-ex"><h3>${esc(e.name)}</h3><p>${e.records.filter(r=>r.done).map(r=>`${esc(r.kg)} kg × ${esc(r.reps)}`).join(' &nbsp;·&nbsp; ')||'Nenhuma série'}</p>${e.sessionNotes?`<p>Obs.: ${esc(e.sessionNotes)}</p>`:''}</div>`).join('')}`,
-  `<button class="btn primary" data-action="close-modal">${finished?'Incrível, bora! 🐀':'Fechar'} ${icon('check')}</button>`);
+  `<button class="btn primary" data-action="close-modal">${finished?(isY?'Te amo! ❤️':'Incrível, bora! 🐀'):'Fechar'} ${icon('check')}</button>`);
 }
 
 // ── FINISH SESSION ───────────────────────────────────────────────
