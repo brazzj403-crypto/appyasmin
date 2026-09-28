@@ -855,6 +855,15 @@ function load(){
     if(!v.notifications)v.notifications={reminder:false,reminderTime:'07:00'};
     // ensure weight keys match profile ids
     v.profiles.forEach(p=>{if(!v.weights[p.id])v.weights[p.id]=[]});
+    
+    // Auto-inject Yasmin's 5-day workout if it's missing (migrating her plans)
+    const yasminPlans = v.plans.filter(p => p.owner === 'p2');
+    const hasFriday = yasminPlans.some(p => p.letter === 'E' && p.name.includes('Sexta'));
+    if (!hasFriday) {
+      // Remove old yasmin plans and add the new 5-day split
+      v.plans = v.plans.filter(p => p.owner !== 'p2').concat(defaultPlansYasmin('p2'));
+    }
+    
     return v;
   }catch(e){storageError=true;return initial()}
 }
