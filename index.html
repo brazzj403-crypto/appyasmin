@@ -104,6 +104,24 @@ small,.small{font-size:13px}
 .couple-info strong{display:block;font-size:13px;font-weight:700;color:var(--text)}
 .couple-info small{color:var(--muted);font-size:11px}
 
+/* ─── PROFILE SWITCH BTN ─────────── */
+.switch-profile-btn{
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:10px 14px;border-radius:14px;border:1px solid var(--line);
+  background:var(--panel2);font-size:13px;font-weight:700;
+  color:var(--text);transition:all .15s;margin-top:10px;
+  white-space:nowrap;overflow:hidden;
+}
+.switch-profile-btn:hover{border-color:var(--green)60;background:var(--soft);color:var(--green)}
+.switch-profile-btn .sw-avatar{
+  width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  font-size:10px;font-weight:800;flex:none;
+  background:linear-gradient(135deg,var(--accent),#ff3d7a);color:#fff;
+}
+.switch-profile-btn.is-p1 .sw-avatar{
+  background:linear-gradient(135deg,var(--green),var(--green2));color:var(--greenText);
+}
+
 /* ─── TOP BAR ─────────────────────── */
 .topbar{height:100px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:12px}
 .breadcrumb{font-size:13px;color:var(--muted)}
@@ -567,7 +585,7 @@ dialog::backdrop{background:#04080490;backdrop-filter:blur(8px)}
       <span class="rat-emoji">🐀</span>
       <div class="couple-info">
         <strong>Casal Rats</strong>
-        <small>Treinem juntos 💪</small>
+        <small>boraaaa meu amo</small>
       </div>
     </div>
   </div>
@@ -580,7 +598,8 @@ dialog::backdrop{background:#04080490;backdrop-filter:blur(8px)}
       <button class="iconbtn" id="theme-toggle" aria-label="Alternar tema"></button>
       <div class="profile-picker">
         <span class="avatar" id="avatar">JP</span>
-        <select id="profile-select" aria-label="Perfil ativo"></select>
+        <span id="active-name" style="font-size:13px;font-weight:700"></span>
+        <button id="switch-profile-btn" class="switch-profile-btn" aria-label="Trocar perfil" style="padding:6px 12px;margin:0;border-radius:100px;font-size:12px"></button>
       </div>
     </div>
   </header>
@@ -754,17 +773,70 @@ function bindAllExSearches(){
 }
 
 // ── DEFAULT DATA ─────────────────────────────────────────────────
-function exercise(name,sets=3,reps='10–12',rest=60){return{id:uid(),name,sets,reps,rest,notes:''}}
-function defaultPlans(owner){return[
+function exercise(name,sets=3,reps='10–12',rest=60,notes=''){return{id:uid(),name,sets,reps,rest,notes}}
+function defaultPlansJoao(owner){return[
   {id:uid(),owner,letter:'A',name:'Peito e Tríceps',days:[1,4],exercises:[exercise('Supino reto',4,'8–12',90),exercise('Supino inclinado com halteres'),exercise('Crucifixo na máquina'),exercise('Tríceps na polia'),exercise('Tríceps francês')],demo:true},
   {id:uid(),owner,letter:'B',name:'Costas e Bíceps',days:[2,5],exercises:[exercise('Puxada frontal',4,'8–12',90),exercise('Remada baixa'),exercise('Remada unilateral'),exercise('Rosca direta'),exercise('Rosca martelo')],demo:true},
   {id:uid(),owner,letter:'C',name:'Pernas e Ombros',days:[3],exercises:[exercise('Agachamento livre',4,'8–10',120),exercise('Leg press',3,'10–12',90),exercise('Cadeira extensora'),exercise('Mesa flexora'),exercise('Elevação lateral'),exercise('Panturrilha em pé',3,'12–15',60)],demo:true},
+]}
+function defaultPlansYasmin(owner){return[
+  {
+    id:uid(),owner,letter:'A',name:'Segunda — Glúteo',days:[1],demo:false,
+    exercises:[
+      exercise('Elevação Pélvica',4,'12–15',90,'1 série de aquecimento + 3 válidas. Progressão de carga.'),
+      exercise('Agachamento Búlgaro',3,'10–12',90,'Halteres na mão oposta à perna da frente.'),
+      exercise('Coice na Polia',3,'12–15',60),
+      exercise('Cadeira Abdutora',3,'15–20',60),
+      exercise('Extensão de Quadril no Banco Romano',2,'12–15',60),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'B',name:'Terça — Costas, Deltóide e Bíceps',days:[2],demo:false,
+    exercises:[
+      exercise('Puxada Aberta',3,'10–12',90,'Cardio liberado antes.'),
+      exercise('Remada Baixa com Triângulo',3,'10–12',90),
+      exercise('Remada Curvada',3,'10–12',90,'Barra livre ou halteres.'),
+      exercise('Crucifixo Inverso',3,'15–20',60,'Deltóide posterior.'),
+      exercise('Rosca Direta com Halteres',3,'10–12',60,'Com rotação / supinação.'),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'C',name:'Quarta — Quadríceps e Panturrilha',days:[3],demo:false,
+    exercises:[
+      exercise('Agachamento Hack',4,'10–12',90,'1 série de aquecimento + 3 válidas.'),
+      exercise('Afundo no Smith',3,'10–12',90,'Mobilidade pré-treino.'),
+      exercise('Leg Press',3,'10–12',90),
+      exercise('Cadeira Extensora',3,'15–20',60),
+      exercise('Panturrilha em Pé',3,'15–20',60),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'D',name:'Quinta — Ombros, Tríceps e Bíceps',days:[4],demo:false,
+    exercises:[
+      exercise('Desenvolvimento Livre',3,'10–12',90,'Mobilidade + cardio liberado antes.'),
+      exercise('Elevação Lateral com Halteres',3,'12–15',60),
+      exercise('Tríceps Corda',3,'12–15',60),
+      exercise('Tríceps Testa na Polia',3,'12–15',60),
+      exercise('Rosca Scott',3,'10–12',60,'Ou Rosca Martelo.'),
+      exercise('Flexão de Punho com Halteres',3,'15–20',45,'Antebraço — flexão e extensão.'),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'E',name:'Sexta — Posterior e Adutores',days:[5],demo:false,
+    exercises:[
+      exercise('Agachamento Sumô',3,'10–12',90,'Base aberta. Livre ou máquina. Mobilidade pré-treino.'),
+      exercise('Stiff Livre',3,'10–12',90),
+      exercise('Cadeira Flexora',3,'12–15',60),
+      exercise('Mesa Flexora',3,'12–15',60),
+      exercise('Cadeira Adutora',3,'15–20',60),
+    ]
+  },
 ]}
 function initial(){return{
   version:2,
   profiles:[{id:'p1',name:'João Pedro'},{id:'p2',name:'Yasmin'}],
   active:'p1',theme:'dark',
-  plans:[...defaultPlans('p1'),...defaultPlans('p2')],
+  plans:[...defaultPlansJoao('p1'),...defaultPlansYasmin('p2')],
   sessions:[],ongoing:{},rest:null,
   weights:{p1:[],p2:[]},
   notifications:{reminder:false,reminderTime:'07:00'},
@@ -831,7 +903,15 @@ function render(){
     ['progress','trend','Progresso'],
     ['settings','settings','Ajustes'],
   ].map(([v,i,t])=>`<button data-nav="${v}" class="${view===v||view==='session'&&v==='home'?'active':''}" ${view===v?'aria-current="page"':''}>${icon(i)}<span>${t}</span></button>`).join('');
-  $('#profile-select').innerHTML=state.profiles.map(p=>`<option value="${p.id}" ${p.id===state.active?'selected':''}>${esc(nameFirst(p.id))}</option>`).join('');
+  // profile switch button — always shows the OTHER person's name
+  const otherProfile=state.profiles.find(p=>p.id!==state.active);
+  const swBtn=$('#switch-profile-btn');
+  const activeName=$('#active-name');
+  if(activeName)activeName.textContent=nameFirst();
+  if(swBtn&&otherProfile){
+    swBtn.textContent='Trocar para '+nameFirst(otherProfile.id);
+    swBtn.dataset.switchTo=otherProfile.id;
+  }
   $('#avatar').textContent=initials(profile().name);
   $('#avatar').className='avatar'+(state.active===state.profiles[0].id?'':' partner');
   const views={home:homeView,plans:plansView,history:historyView,progress:progressView,settings:settingsView,session:sessionView};
@@ -1436,7 +1516,13 @@ document.addEventListener('submit',event=>{
   }
 });
 
-$('#profile-select').addEventListener('change',event=>{state.active=event.target.value;planOwner=state.active;selectedPlan=null;save();navigate('home');toast('Perfil: '+profile().name+' 🐀')});
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('#switch-profile-btn');
+  if(btn&&btn.dataset.switchTo){
+    state.active=btn.dataset.switchTo;planOwner=state.active;selectedPlan=null;
+    save();navigate('home');toast('Agora é o perfil de '+profile().name+' 🐀');
+  }
+});
 $('#theme-toggle').addEventListener('click',()=>{state.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';save();render()});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(state.theme==='system')applyTheme()});
 $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal()}});
