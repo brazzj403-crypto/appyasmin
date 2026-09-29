@@ -441,7 +441,7 @@ small,.small{font-size:13px}
   z-index:1000;box-shadow:var(--shadow);
   background:var(--panel);color:var(--text);
   font-size:13px;font-weight:600;max-width:90%;width:max-content;
-  transition:opacity .2s;backdrop-filter:blur(12px);
+  transition:opacity .2s;
 }
 .toast:empty{display:none}
 
@@ -452,7 +452,7 @@ dialog{
   max-width:calc(100vw - 24px);max-height:90dvh;
   box-shadow:var(--shadow);
 }
-dialog::backdrop{background:#04080490;backdrop-filter:blur(8px)}
+dialog::backdrop{background:#04080490}
 .modal-head{padding:22px 24px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:1px solid var(--line)}
 .modal-body{padding:22px 24px;overflow-y:auto;max-height:60vh}
 .modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--panel);z-index:2}
@@ -570,9 +570,299 @@ dialog::backdrop{background:#04080490;backdrop-filter:blur(8px)}
   .history-item{padding:14px 12px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ─── AUTH SCREEN ─────────────────────── */
+.auth-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  overflow-y:auto;padding:24px;
+}
+.auth-overlay.hidden{display:none!important}
+.auth-container{
+  width:100%;max-width:480px;
+  animation:authFadeIn .5s ease-out;
+}
+@keyframes authFadeIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.auth-brand{
+  text-align:center;margin-bottom:36px;
+}
+.auth-brand .brand-mark{
+  width:56px;height:56px;border-radius:18px;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:inline-grid;place-items:center;font-size:32px;
+  box-shadow:0 0 40px var(--green)30;
+  margin-bottom:14px;
+}
+.auth-brand h1{
+  font-family:Manrope,sans-serif;font-size:32px;font-weight:900;
+  letter-spacing:-1.5px;color:var(--text);
+}
+.auth-brand p{
+  color:var(--muted);font-size:14px;margin-top:6px;
+}
+.auth-card{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:32px;
+  box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.auth-card::before{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,var(--green)10 0%,transparent 70%);
+  pointer-events:none;
+}
+.auth-card::after{
+  content:'';position:absolute;bottom:-60px;left:-60px;
+  width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent)08 0%,transparent 70%);
+  pointer-events:none;
+}
+.auth-tabs{
+  display:flex;gap:4px;background:var(--panel2);border-radius:14px;
+  padding:4px;margin-bottom:28px;
+}
+.auth-tabs button{
+  flex:1;padding:11px 16px;border-radius:10px;
+  font-size:14px;font-weight:600;color:var(--muted);
+  background:transparent;transition:all .2s;
+}
+.auth-tabs button.active{
+  background:var(--panel);color:var(--text);
+  box-shadow:0 2px 8px #0002;
+}
+.auth-tabs button:hover:not(.active){
+  color:var(--text);
+}
+.auth-form{display:grid;gap:16px;position:relative;z-index:1}
+.auth-form .field-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+.auth-field{
+  display:grid;gap:6px;
+}
+.auth-field label{
+  font-size:12px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.auth-field input{
+  border:1px solid var(--line);background:var(--panel2);
+  border-radius:12px;padding:13px 16px;color:var(--text);
+  font-size:15px;width:100%;min-width:0;
+  transition:border-color .2s,box-shadow .2s;
+}
+.auth-field input:hover{border-color:var(--green)40}
+.auth-field input:focus{
+  border-color:var(--green);outline:none;
+  box-shadow:0 0 0 3px var(--green)15;
+}
+.auth-field input::placeholder{color:var(--muted2)}
+.auth-field .input-hint{
+  font-size:11px;color:var(--muted2);margin-top:2px;
+}
+.auth-field .input-error{
+  font-size:11px;color:var(--danger);margin-top:2px;
+}
+.imc-display{
+  display:flex;align-items:center;gap:14px;
+  background:var(--panel2);border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;
+  transition:all .3s;
+}
+.imc-display.calculated{
+  border-color:var(--green)40;
+  background:var(--soft);
+}
+.imc-value{
+  font-family:Manrope,sans-serif;font-size:28px;
+  font-weight:800;letter-spacing:-1px;
+  color:var(--muted2);
+  transition:color .3s;
+}
+.imc-display.calculated .imc-value{color:var(--green)}
+.imc-label{
+  font-size:12px;color:var(--muted);
+}
+.imc-category{
+  font-size:13px;font-weight:700;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:8px;
+  margin-top:4px;
+}
+.imc-category.low{background:var(--blueSoft);color:var(--blue)}
+.imc-category.normal{background:var(--soft);color:var(--green)}
+.imc-category.overweight{background:var(--yellowSoft);color:var(--yellow)}
+.imc-category.obese{background:var(--dangerSoft);color:var(--danger)}
+.auth-submit{
+  width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:var(--greenText);font-weight:700;font-size:15px;
+  border:none;cursor:pointer;
+  box-shadow:0 4px 20px var(--green)30;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;
+  margin-top:4px;
+}
+.auth-submit:hover{
+  box-shadow:0 8px 30px var(--green)50;
+  transform:translateY(-2px);
+}
+.auth-submit:active{transform:scale(.97)}
+.auth-link{
+  text-align:center;font-size:13px;color:var(--muted);
+  margin-top:8px;
+}
+.auth-link button{
+  color:var(--green);font-weight:600;background:none;
+  border:none;cursor:pointer;font-size:13px;
+  padding:0;text-decoration:underline;
+  text-decoration-color:transparent;
+  transition:text-decoration-color .15s;
+}
+.auth-link button:hover{
+  text-decoration-color:var(--green);
+}
+.auth-footer{
+  text-align:center;color:var(--muted2);font-size:11px;
+  margin-top:28px;letter-spacing:1px;
+}
+.auth-success{
+  text-align:center;padding:20px 0;
+}
+.auth-success .success-icon{
+  font-size:48px;margin-bottom:14px;
+  animation:bounceIn .5s ease-out;
+}
+@keyframes bounceIn{
+  0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}
+}
+.auth-success h2{
+  font-family:Manrope,sans-serif;color:var(--text);
+  margin-bottom:8px;
+}
+.auth-success p{
+  color:var(--muted);font-size:14px;max-width:320px;
+  margin:0 auto 20px;
+}
+.auth-divider{
+  display:flex;align-items:center;gap:16px;
+  color:var(--muted2);font-size:12px;
+  margin:4px 0;
+}
+.auth-divider::before,.auth-divider::after{
+  content:'';flex:1;height:1px;background:var(--line);
+}
+.password-field{
+  position:relative;
+}
+.password-field input{padding-right:44px}
+.password-toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:4px;transition:color .15s;
+}
+.password-toggle:hover{color:var(--text)}
+.auth-avatar-preview{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:grid;place-items:center;
+  font-size:22px;font-weight:800;color:var(--greenText);
+  margin:0 auto 20px;
+  box-shadow:0 4px 20px var(--green)30;
+  transition:all .3s;
+  font-family:Manrope,sans-serif;
+}
+.logout-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:14px;
+  width:100%;margin-top:8px;
+  font-size:13px;font-weight:600;color:var(--muted);
+  background:transparent;border:1px solid var(--line);
+  transition:all .15s;
+}
+.logout-btn:hover{border-color:var(--danger)50;color:var(--danger);background:var(--dangerSoft)}
+@media(max-width:600px){
+  .auth-container{max-width:100%}
+  .auth-card{padding:24px 20px;border-radius:18px}
+  .auth-brand h1{font-size:26px}
+  .auth-brand .brand-mark{width:48px;height:48px;font-size:26px;border-radius:14px}
+  .auth-form .field-row{grid-template-columns:1fr}
+}
+
+/* ─── NOTIFICATION POPUP ─────────────── */
+.notif-popup-overlay{
+  position:fixed;inset:0;z-index:10000;
+  background:#04080480;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  animation:notifFadeIn .3s ease-out;
+}
+.notif-popup-overlay.hidden{display:none!important}
+@keyframes notifFadeIn{from{opacity:0}to{opacity:1}}
+.notif-popup{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:32px;
+  max-width:400px;width:100%;text-align:center;
+  box-shadow:var(--shadow);
+  animation:notifSlideUp .35s ease-out;
+  position:relative;overflow:hidden;
+}
+@keyframes notifSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.notif-popup::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,var(--green)12 0%,transparent 70%);
+  pointer-events:none;
+}
+.notif-popup .notif-icon{
+  font-size:48px;margin-bottom:16px;
+  display:block;
+}
+.notif-popup h2{
+  font-family:Manrope,sans-serif;font-size:20px;
+  font-weight:800;letter-spacing:-.5px;
+  margin-bottom:8px;
+}
+.notif-popup p{
+  color:var(--muted);font-size:13px;
+  line-height:1.6;margin-bottom:20px;
+}
+.notif-popup-actions{
+  display:flex;gap:10px;justify-content:center;
+}
+.notif-popup-actions .btn{flex:1;max-width:180px}
+@media(max-width:600px){
+  .notif-popup{padding:24px 20px;border-radius:18px}
+  .notif-popup h2{font-size:18px}
+}
 </style>
 </head>
 <body>
+
+<!-- ─── AUTH OVERLAY ─────────────────────── -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="brand-mark">🐀</div>
+      <h1>Casal Rats</h1>
+      <p>Seu app de treino do casal 💚</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs" id="auth-tabs">
+        <button class="active" data-auth-tab="login">Entrar</button>
+        <button data-auth-tab="signup">Criar Conta</button>
+      </div>
+      <div id="auth-content"></div>
+    </div>
+    <div class="auth-footer">CASAL RATS 🐀 · seus dados ficam neste dispositivo</div>
+  </div>
+</div>
+
 <div class="shell">
 <aside class="sidebar">
   <div class="brand">
@@ -601,6 +891,9 @@ dialog::backdrop{background:#04080490;backdrop-filter:blur(8px)}
         <span id="active-name" style="font-size:13px;font-weight:700"></span>
         <button id="switch-profile-btn" class="switch-profile-btn" aria-label="Trocar perfil" style="padding:6px 12px;margin:0;border-radius:100px;font-size:12px"></button>
       </div>
+      <button class="iconbtn" id="logout-btn" aria-label="Sair" title="Sair da conta" style="margin-left:4px">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
     </div>
   </header>
   <div id="content" class="content"></div>
@@ -900,6 +1193,61 @@ function applyTheme(){
 // ── NAVIGATE ─────────────────────────────────────────────────────
 function navigate(v){view=v;render();window.scrollTo({top:0,behavior:'instant'})}
 
+// ── EXERCISE TRANSLATION PT→EN (for ExerciseDB GIF matching) ──────
+const exerciseTranslation={
+  // João — Plano A (Peito e Tríceps)
+  'supino reto':'barbell bench press',
+  'supino inclinado com halteres':'dumbbell incline bench press',
+  'crucifixo na máquina':'machine fly',
+  'tríceps na polia':'cable pushdown',
+  'tríceps francês':'dumbbell lying triceps extension',
+  // João — Plano B (Costas e Bíceps)
+  'puxada frontal':'cable lat pulldown',
+  'remada baixa':'cable seated row',
+  'remada unilateral':'dumbbell bent over row',
+  'rosca direta':'barbell curl',
+  'rosca martelo':'dumbbell hammer curl',
+  // João — Plano C (Pernas e Ombros)
+  'agachamento livre':'barbell squat',
+  'leg press':'sled leg press',
+  'cadeira extensora':'lever leg extension',
+  'mesa flexora':'lever lying leg curl',
+  'elevação lateral':'dumbbell lateral raise',
+  'panturrilha em pé':'lever standing calf raise',
+  // Yasmin — Plano A (Glúteo)
+  'elevação pélvica':'barbell hip thrust',
+  'agachamento búlgaro':'dumbbell bulgarian split squat',
+  'coice na polia':'cable kickback',
+  'cadeira abdutora':'lever seated hip abduction',
+  'extensão de quadril no banco romano':'hyperextension',
+  // Yasmin — Plano B (Costas, Deltóide e Bíceps)
+  'puxada aberta':'cable wide grip lat pulldown',
+  'remada baixa com triângulo':'cable seated row',
+  'remada curvada':'barbell bent over row',
+  'crucifixo inverso':'dumbbell rear lateral raise',
+  'rosca direta com halteres':'dumbbell curl',
+  // Yasmin — Plano C (Quadríceps e Panturrilha)
+  'agachamento hack':'sled hack squat',
+  'afundo no smith':'smith machine lunge',
+  'panturrilha em pé':'lever standing calf raise',
+  // Yasmin — Plano D (Ombros, Tríceps e Bíceps)
+  'desenvolvimento livre':'barbell overhead press',
+  'elevação lateral com halteres':'dumbbell lateral raise',
+  'tríceps corda':'cable rope pushdown',
+  'tríceps testa na polia':'cable lying triceps extension',
+  'rosca scott':'barbell preacher curl',
+  'flexão de punho com halteres':'dumbbell wrist curl',
+  // Yasmin — Plano E (Posterior e Adutores)
+  'agachamento sumô':'barbell sumo squat',
+  'stiff livre':'barbell stiff leg deadlift',
+  'cadeira flexora':'lever seated leg curl',
+  'cadeira adutora':'lever seated hip adduction',
+};
+
+function translateExercise(ptName){
+  return exerciseTranslation[ptName.toLowerCase().trim()]||ptName;
+}
+
 async function renderGifs(){
   const placeholders=document.querySelectorAll('.session-gif');
   if(!placeholders.length)return;
@@ -917,11 +1265,22 @@ async function renderGifs(){
   if(!exdbCache)return;
   placeholders.forEach(el=>{
     if(el.dataset.loaded)return;
-    const q=el.dataset.exName.toLowerCase().trim();
-    const qwords = q.split(' ');
-    let match=exdbCache.find(e=>e.name.toLowerCase()===q) || exdbCache.find(e=>q.includes(e.name.toLowerCase()) || e.name.toLowerCase().includes(q));
-    // fallback fuzzy search by first word if no match
-    if(!match && qwords.length > 0) match = exdbCache.find(e=>e.name.toLowerCase().includes(qwords[0]));
+    const ptName=el.dataset.exName.trim();
+    // Translate PT→EN for API matching
+    const enName=translateExercise(ptName).toLowerCase();
+    const qwords=enName.split(' ');
+    let match=exdbCache.find(e=>e.name.toLowerCase()===enName)
+      || exdbCache.find(e=>enName.includes(e.name.toLowerCase()) || e.name.toLowerCase().includes(enName));
+    // fallback: try matching with significant words (skip "barbell", "dumbbell", etc.)
+    if(!match){
+      const keywords=qwords.filter(w=>!['barbell','dumbbell','cable','lever','sled','smith','machine','with'].includes(w));
+      if(keywords.length>=2){
+        match=exdbCache.find(e=>keywords.every(k=>e.name.toLowerCase().includes(k)));
+      }
+      if(!match&&keywords.length>0){
+        match=exdbCache.find(e=>keywords.slice(0,2).every(k=>e.name.toLowerCase().includes(k)));
+      }
+    }
     if(match){
       el.innerHTML=`<img src="${match.gifUrl}" loading="lazy" style="width:70px;height:70px;border-radius:10px;background:#fff;object-fit:cover;flex:none;box-shadow:var(--shadow-sm)">`;
       el.dataset.loaded='true';
@@ -1591,8 +1950,519 @@ $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=e.ta
 window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){try{const next=JSON.parse(e.newValue);if(next.version){state=next;planOwner=state.active;render();toast('Dados atualizados em outra aba.')}}catch{}}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderRest()});
 
-render();
+// ── AUTH SYSTEM ──────────────────────────────────────────────────
+const AUTH_KEY='rats-auth';
+let authTab='login';
+
+function loadAuth(){
+  try{
+    const raw=localStorage.getItem(AUTH_KEY);
+    if(!raw)return null;
+    return JSON.parse(raw);
+  }catch{return null}
+}
+function saveAuth(data){
+  try{localStorage.setItem(AUTH_KEY,JSON.stringify(data))}catch{}
+}
+function getAccounts(){
+  try{
+    const raw=localStorage.getItem('rats-accounts');
+    return raw?JSON.parse(raw):[];
+  }catch{return[]}
+}
+function saveAccounts(accounts){
+  try{localStorage.setItem('rats-accounts',JSON.stringify(accounts))}catch{}
+}
+
+function calculateIMC(weight,heightCm){
+  if(!weight||!heightCm||weight<=0||heightCm<=0)return null;
+  const heightM=heightCm/100;
+  const imc=weight/(heightM*heightM);
+  return Math.round(imc*10)/10;
+}
+function imcCategory(imc){
+  if(imc<18.5)return{label:'Abaixo do peso',cls:'low',emoji:'🔵'};
+  if(imc<25)return{label:'Peso normal',cls:'normal',emoji:'🟢'};
+  if(imc<30)return{label:'Sobrepeso',cls:'overweight',emoji:'🟡'};
+  return{label:'Obesidade',cls:'obese',emoji:'🔴'};
+}
+
+function renderAuthContent(){
+  // update tabs
+  document.querySelectorAll('#auth-tabs button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.authTab===authTab);
+  });
+  const container=$('#auth-content');
+  if(authTab==='login'){
+    container.innerHTML=`
+      <form class="auth-form" id="login-form">
+        <div class="auth-field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="seuemail@exemplo.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="login-password">Senha</label>
+          <div class="password-field">
+            <input type="password" id="login-password" placeholder="Sua senha" required autocomplete="current-password" minlength="6">
+            <button type="button" class="password-toggle" data-toggle-pw="login-password" aria-label="Mostrar senha">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="auth-submit">Entrar <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="${paths.arrow}"/></svg></button>
+        <p id="login-error" class="inline-error" role="alert" style="text-align:center"></p>
+        <div class="auth-link">
+          <button type="button" data-auth-action="forgot">Esqueceu a senha?</button>
+        </div>
+      </form>`;
+  } else if(authTab==='signup'){
+    container.innerHTML=`
+      <form class="auth-form" id="signup-form">
+        <div class="auth-avatar-preview" id="signup-avatar">?</div>
+        <div class="field-row">
+          <div class="auth-field">
+            <label for="signup-nome">Nome</label>
+            <input type="text" id="signup-nome" placeholder="João" required maxlength="30" autocomplete="given-name">
+          </div>
+          <div class="auth-field">
+            <label for="signup-sobrenome">Sobrenome</label>
+            <input type="text" id="signup-sobrenome" placeholder="Pedro" required maxlength="30" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="auth-field">
+            <label for="signup-altura">Altura (cm)</label>
+            <input type="number" id="signup-altura" placeholder="175" required min="100" max="250" step="1" inputmode="numeric">
+          </div>
+          <div class="auth-field">
+            <label for="signup-peso">Peso (kg)</label>
+            <input type="number" id="signup-peso" placeholder="70.0" required min="30" max="300" step="0.1" inputmode="decimal">
+          </div>
+        </div>
+        <div class="imc-display" id="imc-display">
+          <div>
+            <div class="imc-value" id="imc-value">--</div>
+          </div>
+          <div>
+            <div class="imc-label">Seu IMC</div>
+            <div id="imc-category"></div>
+          </div>
+        </div>
+        <div class="auth-divider">conta</div>
+        <div class="auth-field">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" placeholder="seuemail@exemplo.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="signup-password">Senha</label>
+          <div class="password-field">
+            <input type="password" id="signup-password" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+            <button type="button" class="password-toggle" data-toggle-pw="signup-password" aria-label="Mostrar senha">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="input-hint">Use pelo menos 6 caracteres</span>
+        </div>
+        <button type="submit" class="auth-submit">Criar Conta <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="${paths.check}"/></svg></button>
+        <p id="signup-error" class="inline-error" role="alert" style="text-align:center"></p>
+      </form>`;
+  } else if(authTab==='forgot'){
+    container.innerHTML=`
+      <form class="auth-form" id="forgot-form">
+        <div style="text-align:center;margin-bottom:12px">
+          <div style="font-size:40px;margin-bottom:8px">🔑</div>
+          <h2 style="font-family:Manrope;margin-bottom:6px">Esqueceu a senha?</h2>
+          <p class="muted" style="font-size:13px">Como os dados são locais, vamos mostrar sua senha cadastrada.</p>
+        </div>
+        <div class="auth-field">
+          <label for="forgot-email">Email cadastrado</label>
+          <input type="email" id="forgot-email" placeholder="seuemail@exemplo.com" required autocomplete="email">
+        </div>
+        <button type="submit" class="auth-submit">Recuperar Senha</button>
+        <p id="forgot-error" class="inline-error" role="alert" style="text-align:center"></p>
+        <p id="forgot-result" style="text-align:center;font-size:14px;font-weight:600;color:var(--green);margin-top:8px"></p>
+        <div class="auth-link">
+          <button type="button" data-auth-action="back-login">← Voltar para o login</button>
+        </div>
+      </form>`;
+  } else if(authTab==='success'){
+    const auth=loadAuth();
+    container.innerHTML=`
+      <div class="auth-success">
+        <div class="success-icon">🎉</div>
+        <h2>Conta criada com sucesso!</h2>
+        <p>Bem-vindo(a), ${esc(auth?.firstName||'')}! Agora vamos treinar.</p>
+        <button class="auth-submit" data-auth-action="enter-app" style="max-width:280px;margin:0 auto">
+          Começar a treinar 💪
+        </button>
+      </div>`;
+  }
+}
+
+function updateIMC(){
+  const altura=parseFloat($('#signup-altura')?.value);
+  const peso=parseFloat($('#signup-peso')?.value);
+  const imcVal=calculateIMC(peso,altura);
+  const display=$('#imc-display');
+  const valueEl=$('#imc-value');
+  const catEl=$('#imc-category');
+  if(!display||!valueEl||!catEl)return;
+  if(imcVal){
+    const cat=imcCategory(imcVal);
+    display.classList.add('calculated');
+    valueEl.textContent=imcVal.toFixed(1);
+    catEl.innerHTML=`<span class="imc-category ${cat.cls}">${cat.emoji} ${cat.label}</span>`;
+  }else{
+    display.classList.remove('calculated');
+    valueEl.textContent='--';
+    catEl.innerHTML='';
+  }
+}
+
+function updateSignupAvatar(){
+  const nome=$('#signup-nome')?.value?.trim()||'';
+  const sobrenome=$('#signup-sobrenome')?.value?.trim()||'';
+  const av=$('#signup-avatar');
+  if(!av)return;
+  const ini=(nome?nome[0]:'')+(sobrenome?sobrenome[0]:'');
+  av.textContent=ini.toUpperCase()||'?';
+}
+
+function checkAuth(){
+  const auth=loadAuth();
+  if(auth&&auth.loggedIn){
+    $('#auth-overlay').classList.add('hidden');
+    return true;
+  }
+  $('#auth-overlay').classList.remove('hidden');
+  renderAuthContent();
+  return false;
+}
+
+// Auth event listeners
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('[data-auth-tab]');
+  if(tab){authTab=tab.dataset.authTab;renderAuthContent();return}
+  const action=e.target.closest('[data-auth-action]');
+  if(!action)return;
+  switch(action.dataset.authAction){
+    case'forgot':authTab='forgot';renderAuthContent();break;
+    case'back-login':authTab='login';renderAuthContent();break;
+    case'enter-app':$('#auth-overlay').classList.add('hidden');render();break;
+  }
+});
+
+// Toggle password visibility
+document.addEventListener('click',e=>{
+  const toggle=e.target.closest('[data-toggle-pw]');
+  if(!toggle)return;
+  const input=$('#'+toggle.dataset.togglePw);
+  if(!input)return;
+  const isPassword=input.type==='password';
+  input.type=isPassword?'text':'password';
+  toggle.innerHTML=isPassword
+    ?'<svg class="icon" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>'
+    :'<svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+});
+
+// IMC auto-calc & avatar preview
+document.addEventListener('input',e=>{
+  if(e.target.id==='signup-altura'||e.target.id==='signup-peso')updateIMC();
+  if(e.target.id==='signup-nome'||e.target.id==='signup-sobrenome')updateSignupAvatar();
+});
+
+// Login form
+document.addEventListener('submit',e=>{
+  if(e.target.id==='login-form'){
+    e.preventDefault();
+    const email=$('#login-email').value.trim().toLowerCase();
+    const password=$('#login-password').value;
+    const accounts=getAccounts();
+    const account=accounts.find(a=>a.email===email);
+    if(!account){
+      $('#login-error').textContent='Email não encontrado. Crie uma conta!';
+      return;
+    }
+    if(account.password!==password){
+      $('#login-error').textContent='Senha incorreta. Tente novamente.';
+      return;
+    }
+    // Login success
+    saveAuth({...account,loggedIn:true});
+    // Update profile names from account
+    state.profiles[0].name=account.firstName+' '+account.lastName;
+    save();
+    $('#auth-overlay').classList.add('hidden');
+    render();
+    toast('Bem-vindo(a) de volta, '+account.firstName+'! 🐀');
+  }
+  if(e.target.id==='signup-form'){
+    e.preventDefault();
+    const firstName=$('#signup-nome').value.trim();
+    const lastName=$('#signup-sobrenome').value.trim();
+    const altura=parseFloat($('#signup-altura').value);
+    const peso=parseFloat($('#signup-peso').value);
+    const email=$('#signup-email').value.trim().toLowerCase();
+    const password=$('#signup-password').value;
+    
+    if(!firstName||!lastName){
+      $('#signup-error').textContent='Preencha nome e sobrenome.';
+      return;
+    }
+    if(!altura||altura<100||altura>250){
+      $('#signup-error').textContent='Altura deve ser entre 100 e 250 cm.';
+      return;
+    }
+    if(!peso||peso<30||peso>300){
+      $('#signup-error').textContent='Peso deve ser entre 30 e 300 kg.';
+      return;
+    }
+    if(password.length<6){
+      $('#signup-error').textContent='Senha deve ter pelo menos 6 caracteres.';
+      return;
+    }
+    
+    const accounts=getAccounts();
+    if(accounts.find(a=>a.email===email)){
+      $('#signup-error').textContent='Este email já está cadastrado.';
+      return;
+    }
+    
+    const imc=calculateIMC(peso,altura);
+    const account={
+      id:uid(),email,password,
+      firstName,lastName,
+      altura,peso,imc,
+      createdAt:Date.now(),loggedIn:true
+    };
+    accounts.push(account);
+    saveAccounts(accounts);
+    saveAuth(account);
+    
+    // Update state with the new user's data
+    state.profiles[0].name=firstName+' '+lastName;
+    if(!state.weights[state.active])state.weights[state.active]=[];
+    state.weights[state.active].push({kg:peso,date:Date.now()});
+    save();
+    
+    authTab='success';
+    renderAuthContent();
+  }
+  if(e.target.id==='forgot-form'){
+    e.preventDefault();
+    const email=$('#forgot-email').value.trim().toLowerCase();
+    const accounts=getAccounts();
+    const account=accounts.find(a=>a.email===email);
+    if(!account){
+      $('#forgot-error').textContent='Email não encontrado.';
+      $('#forgot-result').textContent='';
+      return;
+    }
+    // Since local storage, show the password masked partially
+    const pw=account.password;
+    const masked=pw.slice(0,2)+'*'.repeat(Math.max(pw.length-4,2))+pw.slice(-2);
+    $('#forgot-error').textContent='';
+    $('#forgot-result').innerHTML=`Sua senha é: <strong style="color:var(--text);background:var(--panel2);padding:4px 12px;border-radius:8px;letter-spacing:1px">${esc(masked)}</strong><br><span class="muted" style="font-size:12px;font-weight:400">Dica: começa com "${esc(pw.slice(0,2))}" e termina com "${esc(pw.slice(-2))}"</span>`;
+  }
+});
+
+// Logout
+document.addEventListener('click',e=>{
+  if(e.target.closest('#logout-btn')){
+    const auth=loadAuth();
+    if(auth){auth.loggedIn=false;saveAuth(auth)}
+    authTab='login';
+    checkAuth();
+    toast('Você saiu da conta. Até logo! 🐀');
+  }
+});
+
+// Check auth on load — se já está logado, vai direto pro app sem mostrar login
+const authOnLoad=loadAuth();
+if(authOnLoad&&authOnLoad.loggedIn){
+  $('#auth-overlay').classList.add('hidden');
+  // Restaurar nome do perfil a partir da conta salva
+  if(authOnLoad.firstName&&authOnLoad.lastName){
+    state.profiles[0].name=authOnLoad.firstName+' '+authOnLoad.lastName;
+  }
+  render();
+}else{
+  // Não logado: mostra tela de login
+  $('#auth-overlay').classList.remove('hidden');
+  renderAuthContent();
+}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ── NOTIFICATION SYSTEM ─────────────────────────────────────────
+const NOTIF_VISITS_KEY='rats-notif-visits';
+const NOTIF_GRANTED_KEY='rats-notif-asked';
+const MAX_POPUP_SHOWS=4;
+let sessionTimeoutTimer=null;
+
+function getNotifVisits(){
+  try{return parseInt(localStorage.getItem(NOTIF_VISITS_KEY)||'0',10)}catch{return 0}
+}
+function setNotifVisits(n){
+  try{localStorage.setItem(NOTIF_VISITS_KEY,String(n))}catch{}
+}
+function wasNotifHandled(){
+  try{return localStorage.getItem(NOTIF_GRANTED_KEY)==='true'}catch{return false}
+}
+function setNotifHandled(){
+  try{localStorage.setItem(NOTIF_GRANTED_KEY,'true')}catch{}
+}
+
+function showNotifPopup(){
+  // Don't show if already granted/denied permanently, or shown enough times
+  if(wasNotifHandled())return;
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted'){setNotifHandled();return}
+  if(Notification.permission==='denied'){setNotifHandled();return}
+  
+  const visits=getNotifVisits()+1;
+  setNotifVisits(visits);
+  if(visits>MAX_POPUP_SHOWS){setNotifHandled();return}
+  
+  // Create popup
+  const overlay=document.createElement('div');
+  overlay.className='notif-popup-overlay';
+  overlay.id='notif-popup-overlay';
+  overlay.innerHTML=`
+    <div class="notif-popup">
+      <span class="notif-icon">🔔</span>
+      <h2>Ative as notificações!</h2>
+      <p>Receba lembretes para não esquecer de finalizar seus treinos e acompanhar seu progresso. Prometemos não encher o saco! 🐀</p>
+      <div class="notif-popup-actions">
+        <button class="btn" id="notif-popup-later">Depois</button>
+        <button class="btn primary" id="notif-popup-allow">Ativar ${icon('bell')}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  
+  // Allow button
+  document.getElementById('notif-popup-allow').addEventListener('click',async()=>{
+    try{
+      const perm=await Notification.requestPermission();
+      if(perm==='granted'){
+        setNotifHandled();
+        state.notifications.reminder=true;
+        save();
+        toast('Notificações ativadas! 🔔');
+      }else{
+        toast('Permissão negada. Você pode ativar depois nos ajustes.');
+      }
+    }catch{toast('Erro ao solicitar permissão.')}
+    overlay.remove();
+  });
+  
+  // Later button
+  document.getElementById('notif-popup-later').addEventListener('click',()=>{
+    overlay.remove();
+  });
+  
+  // Close on backdrop click
+  overlay.addEventListener('click',e=>{
+    if(e.target===overlay)overlay.remove();
+  });
+}
+
+// Send notification helper
+function sendNotification(title,body,tag='rats-notification'){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  try{
+    const options={
+      body,
+      icon:'./icon-192.png',
+      badge:'./icon-192.png',
+      tag,
+      renotify:true,
+      vibrate:[200,100,200],
+      requireInteraction:false,
+    };
+    // Try SW notification first (works in background), fallback to regular
+    if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+      navigator.serviceWorker.ready.then(reg=>{
+        reg.showNotification(title,options).catch(()=>{
+          new Notification(title,options);
+        });
+      }).catch(()=>new Notification(title,options));
+    }else{
+      new Notification(title,options);
+    }
+  }catch{}
+}
+
+// ── WORKOUT ABANDONMENT DETECTION ──────────────────────────────
+// When user leaves the app with an ongoing workout
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    // User is leaving the app
+    const ongoing=state.ongoing[state.active];
+    if(ongoing){
+      const mins=Math.floor((Date.now()-ongoing.started)/60000);
+      const t=totals(ongoing);
+      const total=ongoing.exercises.reduce((n,e)=>n+e.records.length,0);
+      sendNotification(
+        '🐀 Ei, seu treino tá rodando!',
+        `${ongoing.name} — ${t.sets} de ${total} séries feitas (${mins} min). Volta lá pra finalizar!`,
+        'rats-workout-abandon'
+      );
+      
+      // Set 2-hour timeout reminder
+      clearTimeout(sessionTimeoutTimer);
+      sessionTimeoutTimer=setTimeout(()=>{
+        const stillOngoing=state.ongoing[state.active];
+        if(stillOngoing&&stillOngoing.id===ongoing.id){
+          sendNotification(
+            '⏰ Treino há mais de 2 horas!',
+            `Seu treino "${stillOngoing.name}" está em andamento há mais de 2 horas. Finalize ou descarte para não perder os dados!`,
+            'rats-workout-timeout'
+          );
+        }
+      },2*60*60*1000); // 2 hours
+    }
+  }else{
+    // User came back
+    clearTimeout(sessionTimeoutTimer);
+    renderRest();
+  }
+});
+
+// Also set timeout when a session starts
+function startSessionTimeout(){
+  clearTimeout(sessionTimeoutTimer);
+  const ongoing=state.ongoing[state.active];
+  if(!ongoing)return;
+  const elapsed=Date.now()-ongoing.started;
+  const remaining=Math.max(0,(2*60*60*1000)-elapsed);
+  sessionTimeoutTimer=setTimeout(()=>{
+    const s=state.ongoing[state.active];
+    if(s&&s.id===ongoing.id){
+      sendNotification(
+        '⏰ Já faz 2 horas de treino!',
+        `"${s.name}" está em andamento há mais de 2 horas. Não esquece de finalizar, hein! 💪`,
+        'rats-workout-timeout'
+      );
+    }
+  },remaining);
+}
+
+// Start timeout if there's already an ongoing session
+if(state.ongoing[state.active])startSessionTimeout();
+
+// Hook into startPlan to set timeout
+const _origStartPlan=startPlan;
+startPlan=function(id){
+  _origStartPlan(id);
+  startSessionTimeout();
+};
+
+// Show notification popup after a short delay (only on first 4 visits)
+setTimeout(()=>{
+  const authData=loadAuth();
+  if(authData&&authData.loggedIn)showNotifPopup();
+},2000);
+
 </script>
 </body>
 </html>
