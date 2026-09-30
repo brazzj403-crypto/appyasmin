@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0d0f0e"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0f0e"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="description" content="App de musculação do casal. Registre séries, veja seu progresso e treinem juntos.">
 <title>Casal Rats 🐀 — Treinem juntos</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
@@ -948,129 +948,51 @@ const clone=v=>JSON.parse(JSON.stringify(v));
 const KEY='rats-app-v2';
 const dayNames=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
-// ── EXERCISEDB OSS API ───────────────────────────────────────────
-const EXDB_BASE='https://oss.exercisedb.dev/api/v1';
-const EXDB_CACHE_KEY='rats-exdb-cache';
-const EXDB_CACHE_TTL=48*60*60*1000; // 48h
-let exdbCache=null;
-
-function loadExdbCache(){
-  try{
-    const raw=localStorage.getItem(EXDB_CACHE_KEY);
-    if(!raw)return null;
-    const c=JSON.parse(raw);
-    if(Date.now()-c.ts>EXDB_CACHE_TTL){localStorage.removeItem(EXDB_CACHE_KEY);return null}
-    return c.data;
-  }catch{return null}
-}
-function saveExdbCache(data){
-  try{localStorage.setItem(EXDB_CACHE_KEY,JSON.stringify({ts:Date.now(),data}))}catch{}
-}
-
-async function searchExercises(query){
-  if(!query||query.length<2)return [];
-  const q=query.toLowerCase().trim();
-  // try local cache first
-  if(!exdbCache)exdbCache=loadExdbCache();
-  if(exdbCache){
-    return exdbCache.filter(e=>e.name.toLowerCase().includes(q)||(e.targetMuscles||[]).some(m=>m.toLowerCase().includes(q))).slice(0,12);
-  }
-  // fetch from API
-  try{
-    const url=`${EXDB_BASE}/exercises?limit=1500`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(8000)});
-    if(!res.ok)throw new Error('API error');
-    const json=await res.json();
-    const data=(json.data||json||[]).map(e=>({exerciseId:e.exerciseId,name:e.name,gifUrl:e.gifUrl,bodyParts:e.bodyParts,targetMuscles:e.targetMuscles,equipments:e.equipments}));
-    exdbCache=data;
-    saveExdbCache(data);
-    return data.filter(e=>e.name.toLowerCase().includes(q)||(e.targetMuscles||[]).some(m=>m.toLowerCase().includes(q))).slice(0,12);
-  }catch{
-    return [];
-  }
-}
-
-function ptMuscle(m){
-  const map={chest:'Peito',back:'Costas',shoulders:'Ombros',biceps:'Bíceps',triceps:'Tríceps',forearms:'Antebraços',abs:'Abdômen',quads:'Quadríceps',hamstrings:'Isquiotibiais',glutes:'Glúteos',calves:'Panturrilha',spine:'Coluna',lats:'Dorsais','upper back':'Trapézio',traps:'Trapézio',core:'Core',neck:'Pescoço',adductors:'Adutores',abductors:'Abdutores',pectorals:'Peitorais',deltoids:'Deltoides','hip flexors':'Flexores de quadril'};
-  return map[m?.toLowerCase()]||m||'';
-}
-function ptBodyPart(p){
-  const map={chest:'Peito',back:'Costas',shoulders:'Ombros','upper arms':'Braços','lower arms':'Antebraços',waist:'Cintura','upper legs':'Coxas','lower legs':'Pernas',cardio:'Cardio',neck:'Pescoço'};
-  return map[p?.toLowerCase()]||p||'';
-}
-
-let exSearchTimer=null;
-let activeExInput=null;
-let currentDropdown=null;
-
-function closeExDropdown(){
-  if(currentDropdown){currentDropdown.remove();currentDropdown=null}
-}
-
-function bindExSearch(input){
-  if(input.dataset.exBound)return;
-  input.dataset.exBound='1';
-  input.addEventListener('input',async function(){
-    clearTimeout(exSearchTimer);
-    activeExInput=this;
-    const spin=this.parentElement.querySelector('.ex-search-spin');
-    if(spin)spin.classList.add('show');
-    closeExDropdown();
-    const q=this.value.trim();
-    if(q.length<2){if(spin)spin.classList.remove('show');return}
-    exSearchTimer=setTimeout(async()=>{
-      const results=await searchExercises(q);
-      if(spin)spin.classList.remove('show');
-      if(document.activeElement!==input&&activeExInput!==input)return;
-      closeExDropdown();
-      if(!results.length)return;
-      const dd=document.createElement('div');
-      dd.className='ex-dropdown';
-      dd.setAttribute('role','listbox');
-      results.forEach(ex=>{
-        const opt=document.createElement('div');
-        opt.className='ex-option';
-        opt.setAttribute('role','option');
-        opt.setAttribute('tabindex','0');
-        const muscle=ptMuscle((ex.targetMuscles||[])[0])||ptBodyPart((ex.bodyParts||[])[0])||'';
-        opt.innerHTML=`<img class="ex-gif" src="${ex.gifUrl}" alt="${ex.name}" loading="lazy"><div class="ex-info"><strong>${ex.name}</strong><small>${ptBodyPart((ex.bodyParts||[])[0])||''}</small></div>${muscle?`<span class="ex-badge">${muscle}</span>`:''}` ;
-        opt.addEventListener('mousedown',e=>e.preventDefault());
-        opt.addEventListener('click',()=>{
-          input.value=ex.name.charAt(0).toUpperCase()+ex.name.slice(1);
-          input.dispatchEvent(new Event('input',{bubbles:true}));
-          closeExDropdown();
-        });
-        opt.addEventListener('keydown',e=>{if(e.key==='Enter'){input.value=ex.name.charAt(0).toUpperCase()+ex.name.slice(1);closeExDropdown();}});
-        dd.appendChild(opt);
-      });
-      const wrap=input.closest('.ex-search-wrap')||input.parentElement;
-      wrap.style.position='relative';
-      wrap.appendChild(dd);
-      currentDropdown=dd;
-    },350);
-  });
-  input.addEventListener('blur',()=>setTimeout(closeExDropdown,200));
-  input.addEventListener('keydown',e=>{
-    if(!currentDropdown)return;
-    const opts=[...currentDropdown.querySelectorAll('.ex-option')];
-    const cur=currentDropdown.querySelector('.ex-option:focus');
-    const idx=opts.indexOf(cur);
-    if(e.key==='ArrowDown'){e.preventDefault();(opts[idx+1]||opts[0])?.focus()}
-    if(e.key==='ArrowUp'){e.preventDefault();(opts[idx-1]||opts[opts.length-1])?.focus()}
-    if(e.key==='Escape')closeExDropdown();
-  });
-}
-
-function bindAllExSearches(){
-  document.querySelectorAll('[data-edit-field="name"]').forEach(input=>bindExSearch(input));
-}
-
 // ── DEFAULT DATA ─────────────────────────────────────────────────
 function exercise(name,sets=3,reps='10–12',rest=60,notes=''){return{id:uid(),name,sets,reps,rest,notes}}
 function defaultPlansJoao(owner){return[
-  {id:uid(),owner,letter:'A',name:'Peito e Tríceps',days:[1,4],exercises:[exercise('Supino reto',4,'8–12',90),exercise('Supino inclinado com halteres'),exercise('Crucifixo na máquina'),exercise('Tríceps na polia'),exercise('Tríceps francês')],demo:true},
-  {id:uid(),owner,letter:'B',name:'Costas e Bíceps',days:[2,5],exercises:[exercise('Puxada frontal',4,'8–12',90),exercise('Remada baixa'),exercise('Remada unilateral'),exercise('Rosca direta'),exercise('Rosca martelo')],demo:true},
-  {id:uid(),owner,letter:'C',name:'Pernas e Ombros',days:[3],exercises:[exercise('Agachamento livre',4,'8–10',120),exercise('Leg press',3,'10–12',90),exercise('Cadeira extensora'),exercise('Mesa flexora'),exercise('Elevação lateral'),exercise('Panturrilha em pé',3,'12–15',60)],demo:true},
+  {
+    id:uid(),owner,letter:'A',name:'Peito e Tríceps',days:[1],demo:false,
+    exercises:[
+      exercise('Supino inclinado máquina',3,'6–10',90),
+      exercise('Supino reto máquina',3,'8–12',60),
+      exercise('Crucifixo máquina',3,'8–12',60),
+      exercise('Supino declinado máquina',3,'8–12',60),
+      exercise('Tríceps máquina',3,'8–12',60),
+      exercise('Tríceps testa halteres',3,'8–12',60),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'B',name:'Costas e Bíceps',days:[2],demo:false,
+    exercises:[
+      exercise('Puxada aberta',3,'8–12',90),
+      exercise('Remada triângulo',3,'8–12',60),
+      exercise('Remada aberta máquina',3,'8–12',60),
+      exercise('Remada apoiada banco halteres',3,'8–12',60),
+      exercise('Rosca direta no banco',3,'8–12',60),
+      exercise('Rosca Scott máquina',3,'8–12',60),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'C',name:'Ombros',days:[3],demo:false,
+    exercises:[
+      exercise('Desenvolvimento máquina',3,'8–12',90),
+      exercise('Elevação lateral sentado',3,'10–15',60),
+      exercise('Elevação frontal halteres',3,'10–12',60),
+      exercise('Crucifixo inverso',3,'10–15',60),
+      exercise('Encolhimento com halteres',3,'10–15',60),
+    ]
+  },
+  {
+    id:uid(),owner,letter:'D',name:'Braço & Abdômen',days:[4],demo:false,
+    exercises:[
+      exercise('Tríceps máquina',3,'8–12',60),
+      exercise('Tríceps francês halteres',3,'8–12',60),
+      exercise('Rosca martelo halteres',3,'8–12',60),
+      exercise('Rosca direta inclinada banco',3,'8–12',60),
+      exercise('Abdômen máquina',3,'12–20',60),
+    ]
+  },
 ]}
 function defaultPlansYasmin(owner){return[
   {
@@ -1156,6 +1078,12 @@ function load(){
       // Remove old yasmin plans and add the new 5-day split
       v.plans = v.plans.filter(p => p.owner !== 'p2').concat(defaultPlansYasmin('p2'));
     }
+    // Auto-inject João Pedro's 4-day workout if it's missing (migrating his plans)
+    const joaoPlans = v.plans.filter(p => p.owner === 'p1');
+    const hasJoaoD = joaoPlans.some(p => p.letter === 'D' && p.name.includes('Abdômen'));
+    if (!hasJoaoD) {
+      v.plans = v.plans.filter(p => p.owner !== 'p1').concat(defaultPlansJoao('p1'));
+    }
     
     return v;
   }catch(e){storageError=true;return initial()}
@@ -1193,100 +1121,6 @@ function applyTheme(){
 // ── NAVIGATE ─────────────────────────────────────────────────────
 function navigate(v){view=v;render();window.scrollTo({top:0,behavior:'instant'})}
 
-// ── EXERCISE TRANSLATION PT→EN (for ExerciseDB GIF matching) ──────
-const exerciseTranslation={
-  // João — Plano A (Peito e Tríceps)
-  'supino reto':'barbell bench press',
-  'supino inclinado com halteres':'dumbbell incline bench press',
-  'crucifixo na máquina':'machine fly',
-  'tríceps na polia':'cable pushdown',
-  'tríceps francês':'dumbbell lying triceps extension',
-  // João — Plano B (Costas e Bíceps)
-  'puxada frontal':'cable lat pulldown',
-  'remada baixa':'cable seated row',
-  'remada unilateral':'dumbbell bent over row',
-  'rosca direta':'barbell curl',
-  'rosca martelo':'dumbbell hammer curl',
-  // João — Plano C (Pernas e Ombros)
-  'agachamento livre':'barbell squat',
-  'leg press':'sled leg press',
-  'cadeira extensora':'lever leg extension',
-  'mesa flexora':'lever lying leg curl',
-  'elevação lateral':'dumbbell lateral raise',
-  'panturrilha em pé':'lever standing calf raise',
-  // Yasmin — Plano A (Glúteo)
-  'elevação pélvica':'barbell hip thrust',
-  'agachamento búlgaro':'dumbbell bulgarian split squat',
-  'coice na polia':'cable kickback',
-  'cadeira abdutora':'lever seated hip abduction',
-  'extensão de quadril no banco romano':'hyperextension',
-  // Yasmin — Plano B (Costas, Deltóide e Bíceps)
-  'puxada aberta':'cable wide grip lat pulldown',
-  'remada baixa com triângulo':'cable seated row',
-  'remada curvada':'barbell bent over row',
-  'crucifixo inverso':'dumbbell rear lateral raise',
-  'rosca direta com halteres':'dumbbell curl',
-  // Yasmin — Plano C (Quadríceps e Panturrilha)
-  'agachamento hack':'sled hack squat',
-  'afundo no smith':'smith machine lunge',
-  'panturrilha em pé':'lever standing calf raise',
-  // Yasmin — Plano D (Ombros, Tríceps e Bíceps)
-  'desenvolvimento livre':'barbell overhead press',
-  'elevação lateral com halteres':'dumbbell lateral raise',
-  'tríceps corda':'cable rope pushdown',
-  'tríceps testa na polia':'cable lying triceps extension',
-  'rosca scott':'barbell preacher curl',
-  'flexão de punho com halteres':'dumbbell wrist curl',
-  // Yasmin — Plano E (Posterior e Adutores)
-  'agachamento sumô':'barbell sumo squat',
-  'stiff livre':'barbell stiff leg deadlift',
-  'cadeira flexora':'lever seated leg curl',
-  'cadeira adutora':'lever seated hip adduction',
-};
-
-function translateExercise(ptName){
-  return exerciseTranslation[ptName.toLowerCase().trim()]||ptName;
-}
-
-async function renderGifs(){
-  const placeholders=document.querySelectorAll('.session-gif');
-  if(!placeholders.length)return;
-  if(!exdbCache)exdbCache=loadExdbCache();
-  if(!exdbCache){
-    try{
-      const res=await fetch(`${EXDB_BASE}/exercises?limit=1500`,{signal:AbortSignal.timeout(8000)});
-      if(res.ok){
-        const json=await res.json();
-        exdbCache=(json.data||json||[]).map(e=>({name:e.name,gifUrl:e.gifUrl}));
-        saveExdbCache(exdbCache);
-      }
-    }catch(e){}
-  }
-  if(!exdbCache)return;
-  placeholders.forEach(el=>{
-    if(el.dataset.loaded)return;
-    const ptName=el.dataset.exName.trim();
-    // Translate PT→EN for API matching
-    const enName=translateExercise(ptName).toLowerCase();
-    const qwords=enName.split(' ');
-    let match=exdbCache.find(e=>e.name.toLowerCase()===enName)
-      || exdbCache.find(e=>enName.includes(e.name.toLowerCase()) || e.name.toLowerCase().includes(enName));
-    // fallback: try matching with significant words (skip "barbell", "dumbbell", etc.)
-    if(!match){
-      const keywords=qwords.filter(w=>!['barbell','dumbbell','cable','lever','sled','smith','machine','with'].includes(w));
-      if(keywords.length>=2){
-        match=exdbCache.find(e=>keywords.every(k=>e.name.toLowerCase().includes(k)));
-      }
-      if(!match&&keywords.length>0){
-        match=exdbCache.find(e=>keywords.slice(0,2).every(k=>e.name.toLowerCase().includes(k)));
-      }
-    }
-    if(match){
-      el.innerHTML=`<img src="${match.gifUrl}" loading="lazy" style="width:70px;height:70px;border-radius:10px;background:#fff;object-fit:cover;flex:none;box-shadow:var(--shadow-sm)">`;
-      el.dataset.loaded='true';
-    }
-  });
-}
 
 // ── RENDER ───────────────────────────────────────────────────────
 function render(){
@@ -1320,7 +1154,6 @@ function render(){
   renderRest();
   // re-init charts after render
   if(view==='progress'){setTimeout(initCharts,50)}
-  if(view==='session'){setTimeout(renderGifs,50)}
   if(storageError&&!storageWarned){storageWarned=true;toast('Armazenamento indisponível. Dados somente nesta sessão.',7000)}
 }
 
@@ -1692,7 +1525,6 @@ function sessionView(){
             <p>${old?`⬆️ Último: ${esc(old.kg)} kg × ${esc(old.reps)} rep`:'Primeiro registro!'}</p>
             ${e.notes?`<p>${esc(e.notes)}</p>`:''}
           </div>
-          <div class="session-gif" data-ex-name="${esc(e.name)}"></div>
         </div>
         <div class="set-header"><span>Série</span><span>kg</span><span>Reps</span><span>✓</span></div>
         ${e.records.map((r,j)=>`<div class="set-row ${r.done?'done':''}" data-set-row="${i}-${j}">
@@ -1778,13 +1610,12 @@ function renderEditor(){
   `<form id="plan-form"><div class="form-grid"><label class="field">Nome do treino<input required maxlength="60" name="plan-name" value="${esc(p.name)}" placeholder="Ex.: Peito e Tríceps"></label><label class="field">Identificação<input required maxlength="3" name="plan-letter" value="${esc(p.letter)}" placeholder="A"></label></div>
   <p class="small muted" style="margin-top:16px">Dias da semana:</p>
   <div class="edit-day">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" name="day" value="${d}" ${p.days.includes(d)?'checked':''}><span>${dayNames[d]}</span></label>`).join('')}</div>
-  <div class="row between" style="margin:14px 0 4px"><h3>Exercícios</h3><span class="badge blue" style="font-size:11px">${icon('trend')} ExerciseDB API</span></div>
-  <p class="small muted" style="margin-bottom:12px">Digite o nome ou músculo para buscar na API — aparecem com GIF e grupo muscular.</p>
-  ${p.exercises.map((e,i)=>`<div class="edit-exercise" data-edit-ex="${i}"><div class="row between" style="margin-bottom:8px"><span class="small muted">Exercício ${i+1}</span><div class="edit-tools"><button type="button" class="iconbtn" data-action="move-up" data-index="${i}" aria-label="Subir" ${i===0?'disabled':''}>${icon('up')}</button><button type="button" class="iconbtn" data-action="move-down" data-index="${i}" aria-label="Descer" ${i===p.exercises.length-1?'disabled':''}>${icon('down')}</button><button type="button" class="iconbtn" data-action="remove-exercise" data-index="${i}" aria-label="Remover">${icon('trash')}</button></div></div><div class="field"><label>Nome do exercício</label><div class="ex-search-wrap"><input required maxlength="80" data-edit-field="name" value="${esc(e.name)}" placeholder="Ex: bench press, glutes..."><span class="ex-search-spin"></span></div></div><div class="exercise-fields"><label class="field">Séries<input type="number" min="1" max="12" required data-edit-field="sets" value="${e.sets}"></label><label class="field">Repetições<input required maxlength="20" data-edit-field="reps" value="${esc(e.reps)}"></label><label class="field">Descanso (s)<input type="number" min="5" max="600" step="5" required data-edit-field="rest" value="${e.rest}"></label></div><label class="field" style="margin-top:8px">Observação<input maxlength="200" data-edit-field="notes" value="${esc(e.notes)}" placeholder="Opcional"></label></div>`).join('')}
+  <div class="row between" style="margin:14px 0 4px"><h3>Exercícios</h3></div>
+  <p class="small muted" style="margin-bottom:12px">Adicione e organize seus exercícios.</p>
+  ${p.exercises.map((e,i)=>`<div class="edit-exercise" data-edit-ex="${i}"><div class="row between" style="margin-bottom:8px"><span class="small muted">Exercício ${i+1}</span><div class="edit-tools"><button type="button" class="iconbtn" data-action="move-up" data-index="${i}" aria-label="Subir" ${i===0?'disabled':''}>${icon('up')}</button><button type="button" class="iconbtn" data-action="move-down" data-index="${i}" aria-label="Descer" ${i===p.exercises.length-1?'disabled':''}>${icon('down')}</button><button type="button" class="iconbtn" data-action="remove-exercise" data-index="${i}" aria-label="Remover">${icon('trash')}</button></div></div><div class="field"><label>Nome do exercício</label><input required maxlength="80" data-edit-field="name" value="${esc(e.name)}" placeholder="Ex: Supino reto, Agachamento..."></div><div class="exercise-fields"><label class="field">Séries<input type="number" min="1" max="12" required data-edit-field="sets" value="${e.sets}"></label><label class="field">Repetições<input required maxlength="20" data-edit-field="reps" value="${esc(e.reps)}"></label><label class="field">Descanso (s)<input type="number" min="5" max="600" step="5" required data-edit-field="rest" value="${e.rest}"></label></div><label class="field" style="margin-top:8px">Observação<input maxlength="200" data-edit-field="notes" value="${esc(e.notes)}" placeholder="Opcional"></label></div>`).join('')}
   <button type="button" class="btn full" style="margin-top:14px" data-action="add-exercise">${icon('plus')} Adicionar exercício</button>
   <p id="edit-error" class="inline-error" role="alert"></p></form>`,
   `<button class="btn" data-action="close-modal">Cancelar</button><button class="btn primary" type="submit" form="plan-form">Salvar ${icon('check')}</button>`);
-  setTimeout(bindAllExSearches, 50);
 }
 function collectEditor(){
   if(!editing)return;
